@@ -1,0 +1,322 @@
+CREATE TABLE roles(
+	role_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	role_name VARCHAR(128) NOT NULL UNIQUE 
+);
+
+CREATE TABLE permissions(
+	perm_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	perm_name VARCHAR(256) NOT NULL UNIQUE 
+);
+
+CREATE TABLE role_permission(
+	rp_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	perm_num INT NOT NULL, 
+	role_num INT NOT NULL,
+	
+	CONSTRAINT fk_perm_id FOREIGN KEY (perm_num) REFERENCES permissions (perm_id),
+	CONSTRAINT fk_role_id FOREIGN KEY (role_num) REFERENCES roles (role_id)
+);
+
+CREATE TABLE users(
+	user_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	user_email VARCHAR(128) NOT NULL UNIQUE CHECK (user_email LIKE '%___@___%.__%'), 
+	user_pass VARCHAR(50) NOT NULL,
+	role_num INT NOT NULL DEFAULT 1,
+
+	CONSTRAINT fk_ur_id FOREIGN KEY (role_num) REFERENCES roles (role_id)
+);
+
+ALTER TABLE users
+ADD CHECK (char_length(user_pass) >= 8);
+
+INSERT INTO roles (role_name) VALUES ('patient');
+INSERT INTO roles (role_name) VALUES ('assistant');
+INSERT INTO roles (role_name) VALUES ('doctor');
+INSERT INTO roles (role_name) VALUES ('admin');
+
+SELECT * FROM roles;
+
+INSERT INTO permissions (perm_name) VALUES ('create request for appointment');
+INSERT INTO permissions (perm_name) VALUES ('read info about appointment');
+INSERT INTO permissions (perm_name) VALUES ('approve request for appointment');
+INSERT INTO permissions (perm_name) VALUES ('add info about appointment');
+INSERT INTO permissions (perm_name) VALUES ('add new materials');
+INSERT INTO permissions (perm_name) VALUES ('add new devices');
+INSERT INTO permissions (perm_name) VALUES ('add new service');
+INSERT INTO permissions (perm_name) VALUES ('add new doctor');
+INSERT INTO permissions (perm_name) VALUES ('view appoirtmants');
+
+
+SELECT * FROM permissions;
+
+INSERT INTO role_permission (perm_num, role_num) VALUES (1,1);
+INSERT INTO role_permission (perm_num, role_num) VALUES (2,1);
+INSERT INTO role_permission (perm_num, role_num) VALUES (3,2);
+INSERT INTO role_permission (perm_num, role_num) VALUES (3,4);
+INSERT INTO role_permission (perm_num, role_num) VALUES (4,2);
+INSERT INTO role_permission (perm_num, role_num) VALUES (5,2);
+INSERT INTO role_permission (perm_num, role_num) VALUES (5,4);
+INSERT INTO role_permission (perm_num, role_num) VALUES (6,2);
+INSERT INTO role_permission (perm_num, role_num) VALUES (6,4);
+INSERT INTO role_permission (perm_num, role_num) VALUES (7,4);
+INSERT INTO role_permission (perm_num, role_num) VALUES (8,4);
+INSERT INTO role_permission (perm_num, role_num) VALUES (9,3);
+
+SELECT * FROM role_permission;
+
+INSERT INTO users (user_email, user_pass,role_num) VALUES ('burkoliana@gmail.com', '03102002',4);
+INSERT INTO users (user_email, user_pass,role_num) VALUES ('ass@gmail.com', '12345678',3);
+INSERT INTO users (user_email, user_pass,role_num) VALUES ('doc@mail.ru', 'qwertyui',2);
+INSERT INTO users (user_email, user_pass,role_num) VALUES ('vadikkk@gmail.com', '12345678',1);
+INSERT INTO users (user_email, user_pass,role_num) VALUES ('help@gmail.com', '12345678',1);
+
+INSERT INTO users (user_email, user_pass,role_num) 
+VALUES ('surgery@gmail.com', '1234567890', 3) ;
+
+INSERT INTO users (user_email, user_pass,role_num) 
+VALUES ('ortodont@gmail.com', '1234567890', 3);
+
+INSERT INTO users (user_email, user_pass,role_num) 
+VALUES ('terapetht@gmail.com', '1234567890', 3) ;
+
+
+SELECT * FROM users;
+
+CREATE TABLE passports(
+	pass_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	uname VARCHAR(30) NOT NULL, 
+	usurname VARCHAR(30) NOT NULL, 
+	birthday DATE NOT NULL CHECK(('2022-11-10' > birthday) AND (birthday > '1922-11-10')),
+	pass_lett VARCHAR(2) NOT NULL CHECK (char_length(pass_lett)=2),
+	pass_num VARCHAR(7) NOT NULL CHECK (char_length(pass_num)=7),
+	address VARCHAR(256) NOT NULL,
+	gender VARCHAR(6) NOT NULL,
+	ident_num VARCHAR(13) NOT NULL UNIQUE CHECK (char_length(ident_num)=13);
+);
+
+
+INSERT INTO passports (uname, usurname,birthday,pass_lett,pass_num,address,gender,ident_num) 
+VALUES ('Liana','Burko','2002-10-03','KN','2638862','Molodezhnaya, 13, Zelwa', 'female','BY1234567890G');
+
+INSERT INTO passports (uname, usurname,birthday,pass_lett,pass_num,address,gender,ident_num) 
+VALUES ('Vadim','Kozlov','2002-10-09','GM','1234567','Gomel, Buda-Koscheleva', 'male','BY0987654321G');
+
+INSERT INTO passports (uname, usurname,birthday,pass_lett,pass_num,address,gender,ident_num) 
+VALUES ('Nikita','Minskiy','1992-01-20','AB','7654321','Minsk, yl. Veri Horuzhey', 'male','BY0789654321G');
+
+INSERT INTO passports (uname, usurname,birthday,pass_lett,pass_num,address,gender,ident_num) 
+VALUES ('Karina','Krishtafovich','2003-03-25','KN','2563457','Brest', 'female','BY12332145451');
+
+INSERT INTO passports (uname, usurname,birthday,pass_lett,pass_num,address,gender,ident_num) 
+VALUES ('Michail','Grigorchuk','2002-05-21','KN','2563458','Grodno, Napoleona Ordi street', 'male','BY22332145451');
+
+CREATE TABLE departments(
+	dep_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	dep_name VARCHAR(50) NOT NULL, 
+	dep_phone VARCHAR(13) NOT NULL CHECK (dep_phone SIMILAR TO '\+375\d{9}'),
+	dep_head INT NULL,
+
+	CONSTRAINT fk_dep_head FOREIGN KEY (dep_head) REFERENCES doctors(doc_id),	
+);
+
+CREATE TABLE fabricators(
+	fab_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	fab_name VARCHAR(50) NOT NULL UNIQUE, 
+	fab_phone VARCHAR(13) NOT NULL CHECK (fab_phone SIMILAR TO '\+375\d{9}'),	
+	fab_addr VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE devices(
+	dev_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	dev_name VARCHAR(50) NOT NULL, 
+	dev_num VARCHAR(20) NOT NULL,
+	dev_dep INT NOT NULL,
+	dev_fab INT NOT NULL,
+	
+	CONSTRAINT fk_dev_dep FOREIGN KEY (dev_dep) REFERENCES departments (dep_id),
+	CONSTRAINT fk_dev_fab FOREIGN KEY (dev_fab) REFERENCES fabricators (fab_id)
+);
+
+CREATE TABLE services(
+	serv_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	serv_name VARCHAR(50) NOT NULL, 
+	serv_cost DECIMAL CHECK (serv_cost > 0),
+	serv_dep INT NOT NULL,
+	
+	CONSTRAINT fk_serv_dep FOREIGN KEY (serv_dep) REFERENCES departments (dep_id)
+);
+
+CREATE TABLE doctors(
+	doc_id INT NOT NULL,
+	doc_pass INT NOT NULL, 
+	doc_fdw DATE NOT NULL CHECK(('2022-11-11' > doc_fdw) AND (doc_fdw > '2000-11-10')),
+	doc_dep INT NOT NULL,
+	doc_pos VARCHAR(50),
+	
+	CONSTRAINT fk_doc_id FOREIGN KEY (doc_id) REFERENCES users (user_id),
+	CONSTRAINT fk_doc_pass FOREIGN KEY (doc_pass) REFERENCES passports (pass_id),
+	CONSTRAINT fk_doc_dep FOREIGN KEY (doc_dep) REFERENCES departments (dep_id)
+);
+
+CREATE TABLE patients(
+	pat_id INT NOT NULL,
+	pat_pass INT NOT NULL, 
+	pat_phone VARCHAR(13) NOT NULL CHECK (pat_phone SIMILAR TO '\+375\d{9}'),	
+	
+	CONSTRAINT fk_pat_id FOREIGN KEY (pat_id) REFERENCES users (user_id),
+	CONSTRAINT fk_pat_pass FOREIGN KEY (pat_pass) REFERENCES passports (pass_id)
+);
+
+CREATE TABLE materials(
+	mat_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	mat_name VARCHAR(50) NOT NULL, 
+	mat_amount DECIMAL NOT NULL  CHECK (mat_amount > 0),
+	mat_cost DECIMAL NOT NULL CHECK (mat_cost > 0),
+	mat_fab INT NOT NULL,
+
+	CONSTRAINT fk_mat_fab FOREIGN KEY (mat_fab) REFERENCES fabricators (fab_id)
+);
+
+
+ALTER TABLE doctors
+ADD PRIMARY KEY(doc_id);
+
+ALTER TABLE patients
+ADD PRIMARY KEY(pat_id);
+
+CREATE TABLE appointments(
+	app_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	app_date DATE NOT NULL CHECK(('2022-11-11' > app_date) AND (app_date > '2000-11-10')), 
+	app_tbegin TIME NOT NULL, 
+	app_tend TIME NOT NULL, 
+	app_visit BOOLEAN DEFAULT FALSE,
+	app_doc INT NOT NULL,
+	app_pat INT NOT NULL,
+	
+	CONSTRAINT fk_app_doc  FOREIGN KEY (app_doc) REFERENCES doctors (doc_id),
+	CONSTRAINT fk_app_pat FOREIGN KEY (app_pat) REFERENCES patients (pat_id)
+);
+
+CREATE TABLE services_to_app(
+	sa_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	sa_serv INT NOT NULL, 
+	sa_app INT NOT NULL, 
+	sa_cost DECIMAL NOT NULL CHECK (sa_cost > 0),
+
+	CONSTRAINT fk_sa_serv FOREIGN KEY (sa_serv) REFERENCES services (serv_id),
+	CONSTRAINT fk_sa_app FOREIGN KEY (sa_app) REFERENCES appointments (app_id)
+);
+
+CREATE TABLE materials_to_app(
+	ma_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	ma_mat INT NOT NULL, 
+	ma_app INT NOT NULL, 
+	ma_amount DECIMAL NULL CHECK (ma_amount >= 0),
+	ma_cost DECIMAL NULL CHECK (ma_cost >= 0),
+
+	CONSTRAINT fk_ma_mat FOREIGN KEY (ma_mat) REFERENCES materials (mat_id),
+	CONSTRAINT fk_ma_app FOREIGN KEY (ma_app) REFERENCES appointments (app_id)
+);
+
+
+INSERT INTO departments (dep_name, dep_phone)
+VALUES ('Surgery','+375291234321');
+
+INSERT INTO departments (dep_name, dep_phone)
+VALUES ('Orthodontics','+375334554561');
+
+INSERT INTO departments (dep_name, dep_phone)
+VALUES ('Therapeutics','+375331929122');
+
+INSERT INTO doctors (doc_id, doc_pass, doc_fdw, doc_dep, doc_pos) 
+VALUES (12,4, '2010-10-12', 15, 'Head surgeon');
+
+INSERT INTO doctors (doc_id, doc_pass, doc_fdw, doc_dep, doc_pos) 
+VALUES (14,5, '2015-10-12', 17, 'Head therapist');
+
+INSERT INTO doctors (doc_id, doc_pass, doc_fdw, doc_dep, doc_pos) 
+VALUES (13,5, '2014-10-12', 16, 'Head ortodont');
+
+INSERT INTO services (serv_name, serv_cost,serv_dep)
+VALUES ('surgery consultation',15,15);
+
+INSERT INTO services (serv_name, serv_cost,serv_dep)
+VALUES ('delete simple tooth',50,15);
+
+INSERT INTO services (serv_name, serv_cost,serv_dep)
+VALUES ('delete difficult tooth',80,15);
+
+INSERT INTO services (serv_name, serv_cost,serv_dep)
+VALUES ('delete wisdom tooth',140,15);
+
+INSERT INTO services (serv_name, serv_cost,serv_dep)
+VALUES ('delete 2 wisdom teeth',200,15);
+
+INSERT INTO services (serv_name, serv_cost,serv_dep)
+VALUES ('orthodontics consultation',15,16);
+
+INSERT INTO services (serv_name, serv_cost,serv_dep)
+VALUES ('orthodontics consultation with roentgenogram',25,16);
+
+INSERT INTO services (serv_name, serv_cost,serv_dep)
+VALUES ('put bracket system part 1',2500,16);
+
+INSERT INTO services (serv_name, serv_cost,serv_dep)
+VALUES ('put bracket system part 2',2500,16);
+
+INSERT INTO services (serv_name, serv_cost,serv_dep)
+VALUES ('therapeutic consultation',10,17);
+
+INSERT INTO services (serv_name, serv_cost,serv_dep)
+VALUES ('caries treatment for 1 tooth',80,17);
+
+INSERT INTO services (serv_name, serv_cost,serv_dep)
+VALUES ('caries treatment for 2 teeth',140,17);
+
+INSERT INTO services (serv_name, serv_cost,serv_dep)
+VALUES ('caries treatment for 3 teeth',200,17);
+
+INSERT INTO patients (pat_id, pat_pass, pat_phone) 
+VALUES (5,7,'+375331234567');
+
+INSERT INTO appointments(app_date, app_tbegin, app_tend, app_visit, app_doc, app_pat)
+VALUES('2020-12-11','11:12:00','13:02:00',true,12,5);
+
+CREATE TABLE logging(
+	log_id INT NOT NULL GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+	log_user INT NOT NULL,
+	log_date DATE NOT NULL CHECK(('2022-11-10' > log_date) AND (log_date > '2000-11-10')),
+	log_info VARCHAR(256) NOT NULL,
+	
+	CONSTRAINT fk_log_user FOREIGN KEY (log_user) REFERENCES users (user_id)
+);
+
+
+SELECT DISTINCT s.serv_name FROM
+services AS s
+JOIN services_to_app AS sapp ON s.serv_id = sapp.sa_serv
+JOIN appointments AS app ON app.app_id = sapp.sa_app
+WHERE app.app_pat = 5;
+
+UPDATE services_to_app
+SET sa_cost = 10
+WHERE sa_id = 1;
+
+INSERT INTO fabricators(fab_name, fab_phone, fab_addr) 
+VALUES ('3M ESPE','+375441234567','Germany');
+
+INSERT INTO fabricators(fab_name, fab_phone, fab_addr) 
+VALUES ('ELINE','+375290987654','Italy');
+
+INSERT INTO materials_to_app(ma_mat, ma_app, ma_amount, ma_cost)
+VALUES(1,1,3,(SELECT mat_cost FROM materials WHERE mat_id = 1 LIMIT 1)*3);
+
+UPDATE fabricators
+SET fab_phone = '+375291234567'
+WHERE fab_id = 2;
+
+INSERT INTO fabricators(fab_name, fab_phone, fab_addr) 
+VALUES ('DDD Diagnostic','+375290987654','Denmark');
+
+SELECT min(serv_cost) 
+FROM services
